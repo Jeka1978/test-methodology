@@ -7,8 +7,19 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 import java.util.Arrays;
 
 public class OnNotTestEnvironmentCondition implements Condition {
+    private static Boolean answer;
+
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        return Arrays.stream(Thread.currentThread().getStackTrace()).noneMatch(element -> element.getClassName().startsWith("org.junit."));
+        if (answer != null) {
+            return answer;
+        }
+        String ignoreTestEnvironment = context.getEnvironment().getProperty("ignore.onTestEnvironmentCondition");
+        if (ignoreTestEnvironment != null && ignoreTestEnvironment.equalsIgnoreCase("true")) {
+            answer = true;
+            return true;
+        }
+        answer = Arrays.stream(Thread.currentThread().getStackTrace()).noneMatch(element -> element.getClassName().startsWith("org.junit."));
+        return answer;
     }
 }
